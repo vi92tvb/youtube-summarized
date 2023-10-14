@@ -2,7 +2,7 @@ import os
 import openai
 import torch
 import streamlit as st
-from dotenv import find_dotenv, load_dotenv
+from dotenv import load_dotenv
 from fairseq.checkpoint_utils import load_model_ensemble_and_task_from_hf_hub
 from fairseq.models.text_to_speech.hub_interface import TTSHubInterface
 from fairseq.utils import move_to_cuda
@@ -10,6 +10,8 @@ from langchain import LLMChain, OpenAI, PromptTemplate
 from PIL import Image
 from transformers import BlipForConditionalGeneration, BlipProcessor
 import soundfile
+
+st.set_page_config(page_title="Image Describe", page_icon='📷')
 
 # Load Token
 load_dotenv(dotenv_path="../.env")
@@ -78,7 +80,6 @@ def image_app():
     if not os.path.exists('outputs'):
         os.mkdir('outputs')
 
-    st.set_page_config(page_title='Image 2 Audio')
     st.header('From an image to an audio story')
     uploaded_file = st.file_uploader('Choose an image...', type=['jpg', 'png'])
 
