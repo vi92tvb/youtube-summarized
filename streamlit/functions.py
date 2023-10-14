@@ -24,6 +24,8 @@ from googleapiclient.discovery import build
 from gtts import gTTS
 import tempfile
 import os
+from comments import fetch_comments
+from utils import summarize_comment
 
 load_dotenv()
 
@@ -111,13 +113,13 @@ def transcribe_youtube(video_id):
     try:
         transcript_list = YouTubeTranscriptApi.list_transcripts(video_id)
 
-        print("asdasdasdasd")
 
+        captions = []
         for transcript in transcript_list:
-            captions = transcript.translate('vi').fetch()
-            with open(transcript_filepath, 'w', encoding='utf-8') as transcript_file:
-                transcript_file.write(parse_text_info(captions))
-            print("Transcript written successfully.")
+            captions.extend(transcript.translate('vi').fetch())
+        with open(transcript_filepath, 'w', encoding='utf-8') as transcript_file:
+            transcript_file.write(parse_text_info(captions))
+        print("Transcript written successfully.")
     except Exception as e:
         print(f"An error occurred: {str(e)}")
         captions = None
@@ -129,7 +131,6 @@ def generate_summary_with_captions(captions, summary_length, yt_url, yt_title, y
             message = f"Vui lòng cung cấp bản tóm tắt cực kỳ dài và toàn diện dựa trên phụ đề chi tiết của video youtube này được cung cấp tại đây:\n\n {captions}\n\n đảm bảo nó dài {summary_length} từ. Đây là link video: {yt_url} cùng với tiêu đề của nó: {yt_title} từ kênh youtube: {yt_author}"
         else:
             message = f"Vui lòng cung cấp bản tóm tắt dài và đầy đủ dựa trên phụ đề chi tiết của video youtube này được cung cấp tại đây:\n\n {captions}\n\n đảm bảo nó dài {summary_length} từ. Đây là link video: {yt_url} cùng với tiêu đề của nó: {yt_title} từ kênh youtube: {yt_author}"
-        print(message)
         response = openai.ChatCompletion.create(
             model="gpt-3.5-turbo",
             messages=[
@@ -156,8 +157,6 @@ def generate_summary_no_captions(summary_length, url, yt_title, yt_description, 
         message = f"Vui lòng cung cấp một bản tóm tắt toàn diện cực kỳ dài và sâu sắc về video này \n\n URL: {url} \n\n Vui lòng đảm bảo độ dài tóm tắt xấp xỉ {summary_length} từ. Vui lòng sử dụng tiêu đề của video ở đây {yt_title} \n\n và tên kênh ở đây {yt_author} \n\n và mô tả ở đây: {yt_description} để cung cấp cái nhìn tổng quan tóm tắt về video"
     else:
         message = f"Vui lòng cung cấp bản tóm tắt chuyên sâu về video này \n\n. URL: {url} \n\n Vui lòng đảm bảo độ dài tóm tắt xấp xỉ {summary_length} từ. Vui lòng sử dụng tiêu đề của video ở đây {yt_title} \n\n và tên kênh ở đây \n\n {yt_author} và mô tả ở đây: \n\n {yt_description} để cung cấp cái nhìn tổng quan tóm tắt về video"
-    print(message)
-    print("Parsing API without captions due to long video OR not captions (or both)...")
     try: 
       response = openai.ChatCompletion.create(
             model="gpt-3.5-turbo",
@@ -220,3 +219,9 @@ def generate_audio(text):
     tts.save(audio_file.name)
     audio_path = audio_file.name
     return audio_path
+
+@st.cache_data(show_spinner=False)
+def generate_comment_summary(url, sum_len):
+    text = fetch_comments(url)
+    summary = summarize_comment(text, sum_len)
+    return summary
