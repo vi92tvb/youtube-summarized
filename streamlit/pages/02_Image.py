@@ -14,9 +14,9 @@ import soundfile
 # Load Token
 load_dotenv(dotenv_path="../.env")
 
-OPENAI_KEY = os.environ.get('OPENAI_KEY')
+OPENAI_API_KEY = os.environ.get('OPENAI_API_KEY')
 
-openai_api_key = OPENAI_KEY
+openai_api_key = OPENAI_API_KEY
 
 MAX_TOKENS = os.getenv('MAX_TOKENS', 200)
 

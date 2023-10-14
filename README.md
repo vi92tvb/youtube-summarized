@@ -24,6 +24,4 @@ streamlit run 01_🎬_YouTube.py
 
 3. Go to your localhost : http://localhost:8502/
 
-3. Enter the OpenAI API Key followed by YouTube video URL and the question you want to ask.
-
-3. Click on the use case you're interested in (YouTube, Meeting, Podcast) and follow the steps.
+4. Enter the OpenAI API Key followed by YouTube video URL and the question you want to ask.
