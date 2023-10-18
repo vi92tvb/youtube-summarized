@@ -2,6 +2,7 @@ import streamlit as st
 from googleapiclient.discovery import build
 from pytube import extract
 import os
+from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
 
 from dotenv import load_dotenv
 import nltk
@@ -25,7 +26,7 @@ def get_comments_thread(youtube, video_id, results=None, next_page_token=""):
         results = []
 
     response = youtube.commentThreads().list(
-        part="snippet,replies",                     
+        part="snippet",                     
         videoId=video_id,
         textFormat='plainText',
         pageToken=next_page_token,
@@ -33,6 +34,7 @@ def get_comments_thread(youtube, video_id, results=None, next_page_token=""):
 
     results = results + response["items"]
 
+    # Get all comments
     if "nextPageToken" in response:
         return get_comments_thread(youtube, video_id, results, response["nextPageToken"])
     else:
@@ -62,5 +64,21 @@ def fetch_comments(url):
     next_page_token = ''
     data = get_comments_thread(youtube, video_id, [], next_page_token)
 
-    all_comments = load_comments_in_format(data)
-    return all_comments
+    return data
+
+def get_comments_sentiment(arr):
+    results = []
+    analyzer = SentimentIntensityAnalyzer()
+    for item in arr:
+        comment = item['snippet']['topLevelComment']['snippet']['textDisplay']
+
+        sentiment = analyzer.polarity_scores(comment)
+
+        if sentiment['compound'] > 0:
+            sentiment_label = 'Positive'
+        elif sentiment['compound'] < 0:
+            sentiment_label = 'Negative'
+        else:
+            sentiment_label = 'Neutral'
+        results.append((comment, sentiment_label))
+    return results

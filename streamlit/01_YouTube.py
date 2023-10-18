@@ -1,7 +1,9 @@
 import streamlit as st
 
-from functions import generate_summary, video_info, is_valid_youtube_url, get_video_duration, generate_audio, generate_comment_summary, generate_shorten_video
+from functions import generate_summary, video_info, is_valid_youtube_url, get_video_duration, generate_audio, generate_comment_summary, generate_shorten_video, generate_piechart
+from comments import fetch_comments, load_comments_in_format
 from IPython.display import Video
+
 st.set_page_config(page_title="Youtube Summarized", page_icon='🎬')
 
 # App UI
@@ -49,21 +51,26 @@ def youtube_app():
 
                 st.markdown(f"#### 🔊 Audio nội dung tóm tắt:")
                 with st.spinner("Đang tạo âm thanh ..."):
-                    audio_path = generate_audio(summary)
+                     audio_path = generate_audio(summary)
                 # Play the Vietnamese audio in the app
                 st.audio(audio_path)
 
                 st.markdown(f"#### 📃 Nội dung tóm tắt bình luận:")
                 with st.spinner("Đang tạo tóm tắt bình luận..."):
                     # Call the function with the user inputs
-                    summary_comment = generate_comment_summary(youtube_url, selected_length)
+                    comments = fetch_comments(youtube_url)
+                    instance = comments
+                    summary_comment = generate_comment_summary(load_comments_in_format(instance), selected_length)
                 st.success(summary_comment)
+
+                st.markdown(f"#### 📃 Biểu đồ đánh giá cảm xúc của đánh giá video:")
+                with st.spinner("Đang tạo biểu đồ..."):
+                    generate_piechart(comments)
 
                 st.markdown(f"#### 📃 Video tóm tắt ngắn chứa các chuyển cảnh:")
                 with st.spinner("Đang tạo video..."):
                     # Call the function with the user inputs
                     video_url = generate_shorten_video(youtube_url)
-                    print(video_url)
                     video  = open(video_url, 'rb').read()
                 st.video(video)
     else:

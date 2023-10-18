@@ -23,9 +23,11 @@ from googleapiclient.discovery import build
 from gtts import gTTS
 import tempfile
 import os
-from comments import fetch_comments
 from utils import summarize_comment
 from Shorten_Video import convert_video_shot_change
+from comments import get_comments_sentiment
+import matplotlib.pyplot as plt
+
 load_dotenv()
 
 YOUTUBE_API_KEY = os.environ.get('YOUTUBE_API_KEY')
@@ -170,7 +172,7 @@ def generate_summary_no_captions(summary_length, url, yt_title, yt_description, 
         )
     except: 
         # Return error message if summary cannot be generated
-        summary = "Uh oh! Sorry, we couldn't generate a summary for this video and this error was not handled. Please visit source-code: https://github.com/nicktill/YTRecap/issues and open a new issue if possibe (it is likely due to the content of the yt video description being too long, exceeding the character limit of the OpenAI API).  "
+        summary = "Xin lỗi chúng tôi không thể tóm tắt video này. "
         return summary
     # Remove newlines and extra spaces from summary
     summary = response.choices[0].message.content.strip()
@@ -230,8 +232,7 @@ def generate_audio(text):
     return audio_path
 
 @st.cache_data(show_spinner=False)
-def generate_comment_summary(url, sum_len):
-    text = fetch_comments(url)
+def generate_comment_summary(text, sum_len):
     summary = summarize_comment(text, sum_len)
     return summary
 
@@ -240,3 +241,33 @@ def generate_shorten_video(url):
     video_folder_creating()
     video_name = convert_video_shot_change(url)
     return video_name
+
+@st.cache_data(show_spinner=False)
+def generate_piechart(comments):
+    results = get_comments_sentiment(comments)
+
+    sentiment_counts = {
+        'Positive': 0,
+        'Neutral': 0,
+        'Negative': 0
+    }
+
+    for comment, sentiment in results:
+        if sentiment in sentiment_counts:
+            sentiment_counts[sentiment] += 1
+
+    # Create a Streamlit app
+    st.title("Sentiment Analysis with Pie Chart")
+    st.write("Distribution of Sentiments in the Data")
+
+    # Prepare the data for the pie chart
+    labels = sentiment_counts.keys()
+    sizes = sentiment_counts.values()
+
+    # Create the pie chart
+    fig, ax = plt.subplots()
+    ax.pie(sizes, labels=labels, autopct='%1.1f%%', startangle=140)
+    ax.axis('equal')  # Equal aspect ratio ensures that pie is drawn as a circle.
+
+    # Display the pie chart in Streamlit
+    st.pyplot(fig)

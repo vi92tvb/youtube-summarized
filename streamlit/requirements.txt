@@ -39,3 +39,4 @@ matplotlib
 timedelta
 faiss-cpu
 textblob
+vaderSentiment
