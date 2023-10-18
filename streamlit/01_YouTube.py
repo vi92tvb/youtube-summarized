@@ -1,7 +1,7 @@
 import streamlit as st
 
-from functions import generate_summary, video_info, is_valid_youtube_url, get_video_duration, generate_audio, generate_comment_summary
-
+from functions import generate_summary, video_info, is_valid_youtube_url, get_video_duration, generate_audio, generate_comment_summary, generate_shorten_video
+from IPython.display import Video
 st.set_page_config(page_title="Youtube Summarized", page_icon='🎬')
 
 # App UI
@@ -58,6 +58,14 @@ def youtube_app():
                     # Call the function with the user inputs
                     summary_comment = generate_comment_summary(youtube_url, selected_length)
                 st.success(summary_comment)
+
+                st.markdown(f"#### 📃 Video tóm tắt ngắn chứa các chuyển cảnh:")
+                with st.spinner("Đang tạo video..."):
+                    # Call the function with the user inputs
+                    video_url = generate_shorten_video(youtube_url)
+                    print(video_url)
+                    video  = open(video_url, 'rb').read()
+                st.video(video)
     else:
         st.warning("YouTube URL không đúng hoặc không khả dụng")
         

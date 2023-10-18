@@ -26,7 +26,7 @@ import tempfile
 import os
 from comments import fetch_comments
 from utils import summarize_comment
-
+from Shorten_Video import convert_video_shot_change
 load_dotenv()
 
 YOUTUBE_API_KEY = os.environ.get('YOUTUBE_API_KEY')
@@ -195,13 +195,12 @@ def generate_summary(url: str, sum_len: int) -> str:
     # Check if the transcript file not exist
     if not os.path.exists(transcript_filepath):
         transcribe_youtube(video_id)
-        # Generating summary of the text file
+    try:
         with open(transcript_filepath, encoding='utf-8') as f:
             content = f.read()
-    else: 
-        # Generating summary of the text file
-        with open(transcript_filepath, encoding='utf-8') as f:
-            content = f.read()
+    except (FileNotFoundError, IOError):
+        content = ""
+        pass
 
     author, title, description = get_video_information(YOUTUBE_API_KEY, video_id)
 
@@ -211,6 +210,17 @@ def generate_summary(url: str, sum_len: int) -> str:
         summary = generate_summary_no_captions(sum_len, url, title, description, author)
     
     return summary.strip()
+
+def video_folder_creating():
+    # Define the folder path
+    input_path = "video_input"
+    output_path = "video_output"
+
+    # Check if the folder exists, and create it if it doesn't
+    if not os.path.exists(input_path):
+        os.makedirs(input_path)
+    if not os.path.exists(output_path):
+        os.makedirs(output_path)
 
 @st.cache_data(show_spinner=False)
 def generate_audio(text):
@@ -225,3 +235,9 @@ def generate_comment_summary(url, sum_len):
     text = fetch_comments(url)
     summary = summarize_comment(text, sum_len)
     return summary
+
+@st.cache_data(show_spinner=False)
+def generate_shorten_video(url):
+    video_folder_creating()
+    video_name = convert_video_shot_change(url)
+    return video_name
