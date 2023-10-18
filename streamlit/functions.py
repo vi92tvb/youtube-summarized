@@ -18,7 +18,6 @@ from langchain.vectorstores import Chroma
 from langchain.chains import RetrievalQA
 from langchain.llms import OpenAI
 from youtube_transcript_api import YouTubeTranscriptApi
-from transformers import pipeline
 from googletrans import Translator
 from googleapiclient.discovery import build
 from gtts import gTTS

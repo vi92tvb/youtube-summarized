@@ -20,19 +20,28 @@ def start_youtube_service():
 def extract_video_id_from_link(url):
     return extract.video_id(url)
 
-def get_comments_thread(youtube, video_id, next_page_token):
-    results = youtube.commentThreads().list(
+def get_comments_thread(youtube, video_id, results=None, next_page_token=""):
+    if results is None:
+        results = []
+
+    response = youtube.commentThreads().list(
         part="snippet,replies",                     
         videoId=video_id,
         textFormat='plainText',
-        maxResults=100,
+        pageToken=next_page_token,
     ).execute()
-    return results
+
+    results = results + response["items"]
+
+    if "nextPageToken" in response:
+        return get_comments_thread(youtube, video_id, results, response["nextPageToken"])
+    else:
+        return results
 
 def load_comments_in_format(comments):
     all_comments = []
     all_comments_string = ""
-    for thread in comments["items"]:
+    for thread in comments:
         comment = {}
         comment['content'] = thread['snippet']['topLevelComment']['snippet']['textOriginal']
         all_comments_string = all_comments_string + comment['content']+"\n"
@@ -51,8 +60,7 @@ def fetch_comments(url):
     youtube = start_youtube_service()
     video_id = extract_video_id_from_link(url)
     next_page_token = ''
-   
-    data = get_comments_thread(youtube, video_id, next_page_token)
+    data = get_comments_thread(youtube, video_id, [], next_page_token)
 
     all_comments = load_comments_in_format(data)
     return all_comments

@@ -28,4 +28,14 @@ google-auth-httplib2
 google-auth-oauthlib
 google-cloud-videointelligence
 opencv-python
-pytube
+google-auth
+ngrok
+pandas
+tabulate
+dash
+dash-bootstrap-components
+plotly
+matplotlib
+timedelta
+faiss-cpu
+textblob
