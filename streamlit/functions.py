@@ -256,10 +256,6 @@ def generate_piechart(comments):
         if sentiment in sentiment_counts:
             sentiment_counts[sentiment] += 1
 
-    # Create a Streamlit app
-    st.title("Sentiment Analysis with Pie Chart")
-    st.write("Distribution of Sentiments in the Data")
-
     # Prepare the data for the pie chart
     labels = sentiment_counts.keys()
     sizes = sentiment_counts.values()
@@ -270,4 +266,4 @@ def generate_piechart(comments):
     ax.axis('equal')  # Equal aspect ratio ensures that pie is drawn as a circle.
 
     # Display the pie chart in Streamlit
-    st.pyplot(fig)
+    return fig
