@@ -3,3 +3,8 @@ streamlit/__pycache__
 .chroma
 tmp
 streamlit/.env
+streamlit/venv/
+streamlit/video_input
+streamlit/video_output
+photo
+GOOGLE_APPLICATION_CREDENTIALS.json

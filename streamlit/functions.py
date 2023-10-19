@@ -3,12 +3,11 @@ import re
 import openai
 import streamlit as st
 from dotenv import load_dotenv
-
+from pytube import extract
 from pytube.exceptions import VideoUnavailable
 from urllib.parse import urlparse, parse_qs
 from moviepy.editor import *
 from pytube import YouTube
-
 from langchain.chains.summarize import load_summarize_chain
 from langchain.text_splitter import CharacterTextSplitter
 from langchain.embeddings import OpenAIEmbeddings
@@ -18,14 +17,15 @@ from langchain.vectorstores import Chroma
 from langchain.chains import RetrievalQA
 from langchain.llms import OpenAI
 from youtube_transcript_api import YouTubeTranscriptApi
-from transformers import pipeline
 from googletrans import Translator
 from googleapiclient.discovery import build
 from gtts import gTTS
 import tempfile
 import os
-from comments import fetch_comments
 from utils import summarize_comment
+from Shorten_Video import convert_video_shot_change
+from comments import get_comments_sentiment
+import matplotlib.pyplot as plt
 
 load_dotenv()
 
@@ -39,6 +39,9 @@ def tmp_folder_creating():
     # Check if the folder exists, and create it if it doesn't
     if not os.path.exists(folder_path):
         os.makedirs(folder_path)
+
+def extract_video_id_from_link(url):
+    return extract.video_id(url)
 
 def is_valid_youtube_url(url: str) -> bool:
     # Check if the URL is a valid YouTube video URL
@@ -171,7 +174,7 @@ def generate_summary_no_captions(summary_length, url, yt_title, yt_description, 
         )
     except: 
         # Return error message if summary cannot be generated
-        summary = "Uh oh! Sorry, we couldn't generate a summary for this video and this error was not handled. Please visit source-code: https://github.com/nicktill/YTRecap/issues and open a new issue if possibe (it is likely due to the content of the yt video description being too long, exceeding the character limit of the OpenAI API).  "
+        summary = "Xin lỗi chúng tôi không thể tóm tắt video này. "
         return summary
     # Remove newlines and extra spaces from summary
     summary = response.choices[0].message.content.strip()
@@ -184,9 +187,7 @@ def generate_summary(url: str, sum_len: int) -> str:
     openai.api_key = OPENAI_API_KEY
 
     # Extract the video_id from the url
-    query = urlparse(url).query
-    params = parse_qs(query)
-    video_id = params["v"][0]
+    video_id = extract_video_id_from_link(url)
 
     # The path of the transcript
     tmp_folder_creating()
@@ -195,13 +196,12 @@ def generate_summary(url: str, sum_len: int) -> str:
     # Check if the transcript file not exist
     if not os.path.exists(transcript_filepath):
         transcribe_youtube(video_id)
-        # Generating summary of the text file
+    try:
         with open(transcript_filepath, encoding='utf-8') as f:
             content = f.read()
-    else: 
-        # Generating summary of the text file
-        with open(transcript_filepath, encoding='utf-8') as f:
-            content = f.read()
+    except (FileNotFoundError, IOError):
+        content = ""
+        pass
 
     author, title, description = get_video_information(YOUTUBE_API_KEY, video_id)
 
@@ -212,6 +212,17 @@ def generate_summary(url: str, sum_len: int) -> str:
     
     return summary.strip()
 
+def video_folder_creating():
+    # Define the folder path
+    input_path = "video_input"
+    output_path = "video_output"
+
+    # Check if the folder exists, and create it if it doesn't
+    if not os.path.exists(input_path):
+        os.makedirs(input_path)
+    if not os.path.exists(output_path):
+        os.makedirs(output_path)
+
 @st.cache_data(show_spinner=False)
 def generate_audio(text):
     tts = gTTS(text, lang='vi')  # 'vi' for Vietnamese
@@ -221,7 +232,12 @@ def generate_audio(text):
     return audio_path
 
 @st.cache_data(show_spinner=False)
-def generate_comment_summary(url, sum_len):
-    text = fetch_comments(url)
+def generate_comment_summary(text, sum_len):
     summary = summarize_comment(text, sum_len)
     return summary
+
+@st.cache_data(show_spinner=False)
+def generate_shorten_video(url):
+    video_folder_creating()
+    video_name = convert_video_shot_change(url)
+    return video_name

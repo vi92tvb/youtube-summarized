@@ -10,9 +10,8 @@ load_dotenv()
 openai.api_key = os.environ.get('OPENAI_API_KEY')
 
 def summarize_comment(chunk: str, summary_length: int) -> str:
-    message = f"Vui lòng cung cấp bản tóm tắt cực kỳ dài và toàn diện dựa trên các câu đánh giá video {chunk} \n\n Vui lòng đảm bảo độ dài tóm tắt xấp xỉ {summary_length} từ."
+    message = f"Vui lòng cung cấp bản tóm tắt cực kỳ dài và toàn diện dựa trên các câu đánh giá sau: {chunk} \n\n Vui lòng đảm bảo độ dài tóm tắt xấp xỉ {summary_length} từ."
     message = message[:4090]
-
     response = openai.ChatCompletion.create(
         model="gpt-3.5-turbo",
         messages=[
