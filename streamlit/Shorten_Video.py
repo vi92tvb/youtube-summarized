@@ -10,7 +10,6 @@ import subprocess
 # Replace with your file, downloaded from Google Cloud Video Intelligence API
 os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = 'GOOGLE_APPLICATION_CREDENTIALS.json'
 
-
 def analyze_shots(path, video):
     fps = float(video.get(cv2.CAP_PROP_FPS))
     total_frames = int(video.get(cv2.CAP_PROP_FRAME_COUNT))

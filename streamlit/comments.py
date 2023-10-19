@@ -25,11 +25,15 @@ def get_comments_thread(youtube, video_id, results=None, next_page_token=""):
     if results is None:
         results = []
 
+    if len(results) >= 1000:
+        return results
+
     response = youtube.commentThreads().list(
         part="snippet",                     
         videoId=video_id,
         textFormat='plainText',
         pageToken=next_page_token,
+        maxResults=100,
     ).execute()
 
     results = results + response["items"]
@@ -82,3 +86,9 @@ def get_comments_sentiment(arr):
             sentiment_label = 'Neutral'
         results.append((comment, sentiment_label))
     return results
+
+def vn_polarity(comment):
+    analyzer = SentimentIntensityAnalyzer()
+    sentiment = analyzer.polarity_scores(comment)
+
+    return sentiment['compound']

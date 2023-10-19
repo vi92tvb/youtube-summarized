@@ -3,12 +3,11 @@ import re
 import openai
 import streamlit as st
 from dotenv import load_dotenv
-
+from pytube import extract
 from pytube.exceptions import VideoUnavailable
 from urllib.parse import urlparse, parse_qs
 from moviepy.editor import *
 from pytube import YouTube
-
 from langchain.chains.summarize import load_summarize_chain
 from langchain.text_splitter import CharacterTextSplitter
 from langchain.embeddings import OpenAIEmbeddings
@@ -40,6 +39,9 @@ def tmp_folder_creating():
     # Check if the folder exists, and create it if it doesn't
     if not os.path.exists(folder_path):
         os.makedirs(folder_path)
+
+def extract_video_id_from_link(url):
+    return extract.video_id(url)
 
 def is_valid_youtube_url(url: str) -> bool:
     # Check if the URL is a valid YouTube video URL
@@ -185,9 +187,7 @@ def generate_summary(url: str, sum_len: int) -> str:
     openai.api_key = OPENAI_API_KEY
 
     # Extract the video_id from the url
-    query = urlparse(url).query
-    params = parse_qs(query)
-    video_id = params["v"][0]
+    video_id = extract_video_id_from_link(url)
 
     # The path of the transcript
     tmp_folder_creating()
@@ -241,29 +241,3 @@ def generate_shorten_video(url):
     video_folder_creating()
     video_name = convert_video_shot_change(url)
     return video_name
-
-@st.cache_data(show_spinner=False)
-def generate_piechart(comments):
-    results = get_comments_sentiment(comments)
-
-    sentiment_counts = {
-        'Positive': 0,
-        'Neutral': 0,
-        'Negative': 0
-    }
-
-    for comment, sentiment in results:
-        if sentiment in sentiment_counts:
-            sentiment_counts[sentiment] += 1
-
-    # Prepare the data for the pie chart
-    labels = sentiment_counts.keys()
-    sizes = sentiment_counts.values()
-
-    # Create the pie chart
-    fig, ax = plt.subplots()
-    ax.pie(sizes, labels=labels, autopct='%1.1f%%', startangle=140)
-    ax.axis('equal')  # Equal aspect ratio ensures that pie is drawn as a circle.
-
-    # Display the pie chart in Streamlit
-    return fig
