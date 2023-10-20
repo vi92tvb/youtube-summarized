@@ -8,24 +8,13 @@ from pytube.exceptions import VideoUnavailable
 from urllib.parse import urlparse, parse_qs
 from moviepy.editor import *
 from pytube import YouTube
-from langchain.chains.summarize import load_summarize_chain
-from langchain.text_splitter import CharacterTextSplitter
-from langchain.embeddings import OpenAIEmbeddings
-from langchain.document_loaders import TextLoader
-from langchain.docstore.document import Document
-from langchain.vectorstores import Chroma
-from langchain.chains import RetrievalQA
-from langchain.llms import OpenAI
 from youtube_transcript_api import YouTubeTranscriptApi
-from googletrans import Translator
 from googleapiclient.discovery import build
 from gtts import gTTS
 import tempfile
 import os
 from utils import summarize_comment
 from Shorten_Video import convert_video_shot_change
-from comments import get_comments_sentiment
-import matplotlib.pyplot as plt
 
 load_dotenv()
 
@@ -140,7 +129,7 @@ def generate_summary_with_captions(captions, summary_length, yt_url, yt_title, y
                 {"role": "system", "content": "Bạn là trợ lý AI cho Youtube Summarized, một ứng dụng web cung cấp các bản tóm tắt rất toàn diện và dài dòng cho bất kỳ video youtube nào được cung cấp (thông qua url đầu vào))"},
                 {"role": "user", "content": message}
             ],
-            max_tokens=1200,
+            max_tokens=1500,
             n=1,
             stop=None,
             temperature=0.5,
@@ -167,7 +156,7 @@ def generate_summary_no_captions(summary_length, url, yt_title, yt_description, 
                 {"role": "system", "content": "Bạn là trợ lý AI cho Youtube Summarized, một ứng dụng web cung cấp các bản tóm tắt rất toàn diện và dài dòng cho bất kỳ video youtube nào được cung cấp (thông qua url đầu vào)"},
                 {"role": "user", "content": message}
             ],
-            max_tokens=1200,
+            max_tokens=1500,
             n=1,
             stop=None,
             temperature=0.5,
@@ -232,8 +221,8 @@ def generate_audio(text):
     return audio_path
 
 @st.cache_data(show_spinner=False)
-def generate_comment_summary(text, sum_len):
-    summary = summarize_comment(text, sum_len)
+def generate_comment_summary(url, text, sum_len):
+    summary = summarize_comment(url, text, sum_len)
     return summary
 
 @st.cache_data(show_spinner=False)

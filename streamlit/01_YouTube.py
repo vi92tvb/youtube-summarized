@@ -51,39 +51,68 @@ def youtube_app():
             if not youtube_url:
                 st.warning("Hãy nhập URL Youtube khả dụng")
             else:
-                with st.spinner("Đang tóm tắt và thống kê..."):
-                    # Create a ThreadPoolExecutor
-                    with concurrent.futures.ThreadPoolExecutor() as executor:
-                        # Submit the functions to the executor and store the Future objects
-                        future_summary = executor.submit(generate_summary, youtube_url, selected_length)
-                        future_audio = executor.submit(generate_audio, future_summary.result())
-                        future_comments = executor.submit(fetch_comments, youtube_url)
-                        future_summary_comment = executor.submit(generate_comment_summary, load_comments_in_format(future_comments.result()), selected_length)
-                        future_shorten_video = executor.submit(generate_shorten_video, youtube_url)
-                        future_df = executor.submit(parse_video, youtube_url)
-                        future_df_metrics = executor.submit(youtube_metrics, youtube_url)
-
+                with st.spinner("Đang tạo tóm tắt..."):
+                    # Call the function with the user inputs
+                    summary = generate_summary(youtube_url, selected_length)
                 st.markdown(f"#### 📃 Nội dung tóm tắt video:")
-                result_summary = st.empty()
-                result_summary.success(future_summary.result())
+                st.success(summary)
 
                 st.markdown(f"#### 🔊 Audio nội dung tóm tắt:")
-                result_audio = st.empty()
                 with st.spinner("Đang tạo âm thanh ..."):
-                    result_audio.audio(future_audio.result())
+                    audio_path = generate_audio(summary)
+                # Play the Vietnamese audio in the app
+                st.audio(audio_path)
 
                 st.markdown(f"#### 📃 Nội dung tóm tắt bình luận:")
-                result_comment = st.empty()
-                result_comment.success(future_summary_comment.result())
+                with st.spinner("Đang tạo tóm tắt bình luận..."):
+                    comments = fetch_comments(youtube_url)
+                    # Call the function with the user inputs
+                    summary_comment = generate_comment_summary(youtube_url, load_comments_in_format(comments), selected_length)
+                st.success(summary_comment)
 
                 st.markdown(f"#### 📃 Video tóm tắt ngắn chứa các chuyển cảnh:")
-                result_video = st.empty()
                 with st.spinner("Đang tạo video..."):
-                    result_video.video(open(future_shorten_video.result(), 'rb').read())
+                    # Call the function with the user inputs
+                    video_url = generate_shorten_video(youtube_url)
+                    print(video_url)
+                    video  = open(video_url, 'rb').read()
+                st.video(video)
+                with st.spinner("Đang tạo thống kê..."):
+                    df = parse_video(youtube_url)
+                    df_metrics = youtube_metrics(youtube_url)
+                # with st.spinner("Đang tóm tắt và thống kê..."):
+                #     # Create a ThreadPoolExecutor
+                #     with concurrent.futures.ThreadPoolExecutor() as executor:
+                #         # Submit the functions to the executor and store the Future objects
+                #         future_summary = executor.submit(generate_summary, youtube_url, selected_length)
+                #         future_audio = executor.submit(generate_audio, future_summary.result())
+                #         future_comments = executor.submit(fetch_comments, youtube_url)
+                #         future_summary_comment = executor.submit(generate_comment_summary, youtube_url, load_comments_in_format(future_comments.result()), selected_length)
+                #         future_shorten_video = executor.submit(generate_shorten_video, youtube_url)
+                #         future_df = executor.submit(parse_video, youtube_url)
+                #         future_df_metrics = executor.submit(youtube_metrics, youtube_url)
+
+                # st.markdown(f"#### 📃 Nội dung tóm tắt video:")
+                # result_summary = st.empty()
+                # result_summary.success(future_summary.result())
+
+                # st.markdown(f"#### 🔊 Audio nội dung tóm tắt:")
+                # result_audio = st.empty()
+                # with st.spinner("Đang tạo âm thanh ..."):
+                #     result_audio.audio(future_audio.result())
+
+                # st.markdown(f"#### 📃 Nội dung tóm tắt bình luận:")
+                # result_comment = st.empty()
+                # result_comment.success(future_summary_comment.result())
+
+                # st.markdown(f"#### 📃 Video tóm tắt ngắn chứa các chuyển cảnh:")
+                # result_video = st.empty()
+                # with st.spinner("Đang tạo video..."):
+                #     result_video.video(open(future_shorten_video.result(), 'rb').read())
 
                 st.markdown(f"#### 📃 Thống kê đánh giá cảm xúc của đánh giá video:")
-                df = future_df.result()
-                df_metrics = future_df_metrics.result()
+                # df = future_df.result()
+                # df_metrics = future_df_metrics.result()
 
                 # Metrics
                 col1, col2, col3 = st.columns(3)
@@ -142,7 +171,9 @@ def youtube_app():
 
                 # Sentiments of the Commentors
                 st.subheader("Biểu đồ phân bố cảm xúc bình luận")
-                sentiments = df[(df['Language'] == 'English') | (df['Language'] == 'Vietnamese')]
+
+                sentiments = df[df['Language'].apply(lambda x: True)]
+
                 data_sentiments = sentiments['TextBlob_Sentiment_Type'].value_counts(
                 ).rename_axis('Sentiment').reset_index(name='counts')
             
