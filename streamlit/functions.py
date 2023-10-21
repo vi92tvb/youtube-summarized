@@ -203,8 +203,8 @@ def generate_summary(url: str, sum_len: int) -> str:
 
 def video_folder_creating():
     # Define the folder path
-    input_path = "video_input"
-    output_path = "video_output"
+    input_path = "inputs"
+    output_path = "outputs"
 
     # Check if the folder exists, and create it if it doesn't
     if not os.path.exists(input_path):
