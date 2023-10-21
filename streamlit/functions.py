@@ -29,6 +29,12 @@ def tmp_folder_creating():
     if not os.path.exists(folder_path):
         os.makedirs(folder_path)
 
+def folder_creating(folder_path):
+    # Check if the folder exists, and create it if it doesn't
+    if not os.path.exists(folder_path):
+        os.makedirs(folder_path)
+
+
 def extract_video_id_from_link(url):
     return extract.video_id(url)
 
@@ -203,8 +209,11 @@ def generate_summary(url: str, sum_len: int) -> str:
 
 def video_folder_creating():
     # Define the folder path
-    input_path = "inputs"
-    output_path = "outputs"
+    input_path = "video_input"
+    output_path = "video_output"
+
+    folder_creating(input_path)
+    folder_creating(output_path)
 
     # Check if the folder exists, and create it if it doesn't
     if not os.path.exists(input_path):

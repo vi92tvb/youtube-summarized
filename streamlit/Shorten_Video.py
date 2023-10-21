@@ -69,10 +69,9 @@ def FrameCapture(video,lst_frame_shot):
             lst_frame_shot.remove(count)
             # Saves the frames with frame-count 
             cv2.imwrite("photo/frame%d.jpg" % index_photo, image) 
-  
         count += 1
         
-    #print("so frame la: ", count)
+    # print("so frame la: ", count)
 
 def delete_files_in_directory(directory_path):
    try:
@@ -95,6 +94,8 @@ def video_file_name_by_time():
     return file_name
 
 def make_video_by_images(image_folder, video_name):
+    if not os.path.exists(image_folder):
+        os.makedirs(image_folder)
     # Đọc tất cả tệp hình ảnh từ thư mục và sắp xếp chúng theo tên
     images = [img for img in os.listdir(image_folder) if img.endswith(".jpg")]
     images.sort()
@@ -126,14 +127,16 @@ def download_yt(VIDEO_ID):
 
     # Kiểm tra xem có stream phù hợp không
     if stream:
+        if not os.path.exists('video_input/'):
+            os.makedirs('video_input/')
         # Đặt tên cho video tải về
         video_name = "Video_Download_" + video_file_name_by_time()
         # Tải video xuống với tên đã đặt
-        stream.download(output_path='inputs/', filename=video_name)
+        stream.download(output_path='video_input/', filename=video_name)
         print(f"Video đã được tải về và đặt tên là: {video_name}")
     else:
         print("Không có stream MP4 480p cho video này.")
-    return 'inputs/' + video_name
+    return 'video_input/' + video_name
 
 def convert_mp4v_to_h264(input_video, output_video):
     try:
@@ -180,8 +183,14 @@ def convert_video_shot_change(VIDEO_ID):
     image_folder = 'photo/'
 
     # Tên của tệp video đầu ra
+    if not os.path.exists('video_output/'):
+        os.makedirs('video_output/')
+
+    if not os.path.exists('outputs/'):
+        os.makedirs('outputs/')
+
     video_name_mp4v = "outputs/" + video_file_name_by_time()
-    video_name_h264 = "outputs/" + video_file_name_by_time()
+    video_name_h264 = "video_output/" + video_file_name_by_time()
     make_video_by_images(image_folder, video_name_mp4v)
     convert_mp4v_to_h264(video_name_mp4v, video_name_h264)
     delete_files_in_directory("outputs/")
