@@ -129,11 +129,11 @@ def download_yt(VIDEO_ID):
         # Đặt tên cho video tải về
         video_name = "Video_Download_" + video_file_name_by_time()
         # Tải video xuống với tên đã đặt
-        stream.download(output_path='video_input/', filename=video_name)
+        stream.download(output_path='inputs/', filename=video_name)
         print(f"Video đã được tải về và đặt tên là: {video_name}")
     else:
         print("Không có stream MP4 480p cho video này.")
-    return 'video_input/' + video_name
+    return 'inputs/' + video_name
 
 def convert_mp4v_to_h264(input_video, output_video):
     try:
@@ -181,7 +181,7 @@ def convert_video_shot_change(VIDEO_ID):
 
     # Tên của tệp video đầu ra
     video_name_mp4v = "outputs/" + video_file_name_by_time()
-    video_name_h264 = "video_output/" + video_file_name_by_time()
+    video_name_h264 = "outputs/" + video_file_name_by_time()
     make_video_by_images(image_folder, video_name_mp4v)
     convert_mp4v_to_h264(video_name_mp4v, video_name_h264)
     delete_files_in_directory("outputs/")
